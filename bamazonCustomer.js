@@ -31,7 +31,7 @@ function intro() {
             console.log(c.yellow.italic("\nYour ship's navigator sets coordinates to bring the ship towards the trade post. The ship reaches 5 km away from the post until a hail from the post arrives on the coms. A cheery looking slug-alien, the assumed trade posts owner, is shown on the viewscreen.\n"))
             tableInit();
         } else {
-            console.log("\nYou sail past the trade post and continue drifting toward your wayward destination.\n")
+            console.log(c.yellow.italic("\nYou sail past the trade post and continue drifting toward your wayward destination.\n"));
             connection.end();
         }
     })
@@ -59,7 +59,7 @@ function tableInit() {
 }
 
 function menu() {
-    var option = ["Yeah sure!", "No thanks", "THIS IS A ROBBERY! HANDS UP!", "Do you happen to have a restroom I could use?"]
+    var option = ["Yeah sure!", "No thanks", "THIS IS A ROBBERY! HANDS UP!", "I saw that you have a restroom here using the Where 2 p app, could I use it?"]
     if (total > 0) {
         option.push('Checkout')
     }
@@ -83,19 +83,32 @@ function menu() {
                 connection.end()
                 break;
             case option[2]:
-                console.log("\n" + shopkeep + "RAIDER SCUM!\n");
-                console.log(c.bold.yellow.italic("The trader presses an ominous glowing red button on his console and you hear a rumbling inside your ship. Within one second your ship explodes in a fiery blue ball, struck by the cannon from the Trade Post. Better luck next time!\n"))
-                connection.end()
+                raid();
                 break;
             case option[3]:
                 // Going to the bathroom
+                console.log("\n"+shopkeep+ "Uh yeah sure, c'mon in");
+                console.log(c.yellow.italic("You enter into the trade post to find a pristine bathroom. After using it, a frangrance entered the air to give it a pleasant smell after your deed."))
+                tableInit()
                 break;
             case option[4]:
-                checkout();
+                checkOut();
                 break;
         }
     })
+}
 
+function raid() {
+    var chance = Math.floor(Math.random() * 2)
+    if (chance === 1) {
+        console.log(shopkeep+ "Don't hurt me! Please take everything, it's all counterfeit anyways.")
+        console.log(c.bold.yellow.italic("You and your crew take the looted items back and continue on your wayward course."))
+        connection.end()
+    } else {
+        console.log("\n" + shopkeep + "RAIDER SCUM!\n");
+        console.log(c.bold.yellow.italic("The trader presses an ominous glowing red button on his console and you hear a rumbling inside your ship. Within one second your ship explodes in a fiery blue ball, struck by the cannon from the Trade Post. Better luck next time!\n"))
+        connection.end()
+    }
 }
 
 
@@ -104,12 +117,12 @@ function buyItem() {
         {
             type: 'number',
             name: 'id',
-            message: "Select an item to purchase using the item ID!"
+            message: `\n ${shopkeep} Select an item to purchase using the item ID!\n`
         },
         {
             type: 'number',
             name: 'quantity',
-            message: "How many would you like to buy?"
+            message: `\n ${shopkeep} How many would you like to buy?\n`
         }
     ]).then(response => {
         // To get the items left, you must get your total stock, subtract it by the quantity that you want.
@@ -124,17 +137,16 @@ function buyItem() {
 
             if (newQuantity >= 0) {
                 if (money > total) {
-                    console.log("Great buy!")
-                    console.log(`The total of your cart is going to be ${total} vks`)
+                    console.log(shopkeep, "A great buy!\n")
+                    console.log(shopkeep, `The total of your cart is going to be ${total} vks\n`)
                     updateStock(newQuantity, itemID);
                 } else {
-                    console.log(shopkeep, "You don't have enough vks! Don't buy if you can't afford.")
+                    console.log(shopkeep, "You don't have enough vks! Don't buy if you can't afford.\n")
                     buyItem()
                 }
 
-
             } else {
-                console.log(shopkeep, "We don't have that many! Jeez keep it reasonable.");
+                console.log(shopkeep, "We don't have that many! Jeez keep it reasonable.\n");
                 buyItem()
             }
         })
@@ -142,7 +154,22 @@ function buyItem() {
 }
 
 function checkOut() {
-
+    money = money - total
+    console.log(shopkeep, "Thank you!\n")
+    inquirer.prompt([
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: (shopkeep, 'Would you like to purchase another item?\n')
+        }
+    ]).then(response => {
+        if (response.confirm === true) {
+            tableInit()
+        } else {
+            console.log("\n" + shopkeep + `Thanks for stopping by traveler! Keep an eye out for the nasty yigNops!!\n`)
+            connection.end()
+        }
+    })
 }
 
 function updateStock(quant, id) {
